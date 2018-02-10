@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.7.2">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2018-02-10T16:42:29+13:00</updated><id>http://localhost:4000/</id><title type="html">Ben Thomas’ Blog</title><subtitle>Just another Sysadmin's thoughts</subtitle><entry><title type="html">Must Read Storage Spaces Direct Blog Posts</title><link href="http://localhost:4000/2017/10/must-read-storage-spaces-direct-blog-posts/" rel="alternate" type="text/html" title="Must Read Storage Spaces Direct Blog Posts" /><published>2017-10-16T03:57:59+13:00</published><updated>2017-10-16T03:57:59+13:00</updated><id>http://localhost:4000/2017/10/must-read-storage-spaces-direct-blog-posts</id><content type="html" xml:base="http://localhost:4000/2017/10/must-read-storage-spaces-direct-blog-posts/">&lt;p&gt;Hi all,&lt;/p&gt;
+
+&lt;p&gt;Quite often the best information on new technology is actually found in blog posts and not actual documentation, and while the documentation for Storage Spaces Direct from Microsoft is great, some of the real gems are in the pre-GA blogs they put up.&lt;/p&gt;
+
+&lt;p&gt;So below, I hope to keep up a list of essential blog posts from both Microsoft and independent bloggers for those of you who wish to really understand what’s happening under the hood!&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://docs.microsoft.com/en-us/windows-server/storage/storage-spaces/storage-spaces-direct-overview&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;&gt;Official Documentation&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://blogs.technet.microsoft.com/filecab/2016/11/21/deep-dive-pool-in-spaces-direct/&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;&gt;Deep Dive: The Storage Pool in Storage Spaces Direct (Cosmos Darwin)&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://blogs.technet.microsoft.com/filecab/2016/11/18/dont-do-it-consumer-ssd/&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;&gt;Don’t do it: consumer-grade solid-state drives (SSD) in Storage Spaces Direct (Dan Lovinger)&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://blogs.technet.microsoft.com/filecab/2016/09/06/volume-resiliency-and-efficiency-in-storage-spaces-direct/&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;&gt;Volume resiliency and efficiency in Storage Spaces Direct (Claus Joergensen)&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://blogs.technet.microsoft.com/filecab/2017/08/11/understanding-dwpd-tbw/&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;&gt;Understanding SSD endurance: drive writes per day (DWPD), terabytes written (TBW), and the minimum recommended for Storage Spaces Direct (Cosmos Darwin)&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;If you think I’ve missed any posts off my list, feel free to leave me comment or flick me a message on twitter&lt;/p&gt;</content><author><name>Ben Thomas</name></author><category term="S2D" /><category term="Storage Spaces Direct" /><category term="Windows Server" /><category term="WS2016" /><summary type="html">Hi all,</summary><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="http://localhost:4000/wp-content/uploads/2017/10/hyper-converged-minimal.png" /></entry><entry><title type="html">Bug when applying KB4038782 September CU to Storage Spaces Direct Clusters</title><link href="http://localhost:4000/2017/09/bug-when-applying-kb4038782-september-cu-to-storage-spaces-direct-clusters/" rel="alternate" type="text/html" title="Bug when applying KB4038782 September CU to Storage Spaces Direct Clusters" /><published>2017-09-17T21:07:34+12:00</published><updated>2017-09-17T21:07:34+12:00</updated><id>http://localhost:4000/2017/09/bug-when-applying-kb4038782-september-cu-to-storage-spaces-direct-clusters</id><content type="html" xml:base="http://localhost:4000/2017/09/bug-when-applying-kb4038782-september-cu-to-storage-spaces-direct-clusters/">&lt;p&gt;&lt;em&gt;UPDATE(2017-09-19): Microsoft have officially recognized the bug and have a KB describing the symptoms and workaround much like the below. See here: &lt;a href=&quot;https://support.microsoft.com/en-us/help/4043361/disks-in-maintenance-mode-status-after-september-cumulative-update-kb&quot;&gt;https://support.microsoft.com/en-us/help/4043361/disks-in-maintenance-mode-status-after-september-cumulative-update-kb&lt;/a&gt;&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;I was patching our dev cluster the other day and came across a new issue when applying the latest September Cumulative Update (KB4038782), and it seems others on the internet have hit this issue as well.&lt;/p&gt;
+
+&lt;h2 id=&quot;background&quot;&gt;Background&lt;/h2&gt;
+
+&lt;p&gt;First, a bit of background on the expected behaviour when performing maintenance:&lt;/p&gt;
+
+&lt;p&gt;Basically when you are performing maintenance on a Storage Spaces Direct (S2D) Cluster, you would normally use Failover Cluster Manager (GUI or Powershell) to Pause and Drain the node first, and then patch and reboot it, and eventually resume and fail back its rolls.&lt;/p&gt;
+
+&lt;p&gt;Now doing this would in turn, mark the physical disks associated with that host as being in maintenance mode during this period to redirect IO away from them, and then when the host is resumed, the disks are taken out of maintenance mode and IO is resumed to them and the storage re-sync begins.&lt;/p&gt;
+
+&lt;p&gt;This is all automated for you if you use the awesome Cluster Aware Updating (CAU) features, which will patch whole clusters for you without your manual involvement.&lt;/p&gt;
+
+&lt;h2 id=&quot;problem&quot;&gt;Problem:&lt;/h2&gt;
+
+&lt;p&gt;What I found while patching this month, both manually and with CAU, is that when the hosts go into maintenance mode and are paused and drained, their disks are also marked as being in maintenance mode, however after patching and rebooting, they get resumed but their disks stay in maintenance mode.&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://i2.wp.com/bcthomas.com/wp-content/uploads/2017/09/Screen-Shot-2017-09-17-at-8.22.45-AM.png?ssl=1&quot;&gt;&lt;img class=&quot;aligncenter size-full wp-image-92&quot; src=&quot;https://i2.wp.com/bcthomas.com/wp-content/uploads/2017/09/Screen-Shot-2017-09-17-at-8.22.45-AM.png?resize=558%2C542&amp;#038;ssl=1&quot; alt=&quot;&quot; width=&quot;558&quot; height=&quot;542&quot; srcset=&quot;https://i2.wp.com/bcthomas.com/wp-content/uploads/2017/09/Screen-Shot-2017-09-17-at-8.22.45-AM.png?w=558&amp;amp;ssl=1 558w, https://i2.wp.com/bcthomas.com/wp-content/uploads/2017/09/Screen-Shot-2017-09-17-at-8.22.45-AM.png?resize=300%2C291&amp;amp;ssl=1 300w&quot; sizes=&quot;(max-width: 558px) 100vw, 558px&quot; data-recalc-dims=&quot;1&quot; /&gt;&lt;/a&gt; &lt;a href=&quot;https://i2.wp.com/bcthomas.com/wp-content/uploads/2017/09/Screen-Shot-2017-09-17-at-8.22.15-AM.png?ssl=1&quot;&gt;&lt;img class=&quot;aligncenter size-large wp-image-91&quot; src=&quot;https://i0.wp.com/bcthomas.com/wp-content/uploads/2017/09/Screen-Shot-2017-09-17-at-8.22.15-AM-909x1024.png?resize=640%2C721&amp;#038;ssl=1&quot; alt=&quot;&quot; width=&quot;640&quot; height=&quot;721&quot; srcset=&quot;https://i2.wp.com/bcthomas.com/wp-content/uploads/2017/09/Screen-Shot-2017-09-17-at-8.22.15-AM.png?resize=909%2C1024&amp;amp;ssl=1 909w, https://i2.wp.com/bcthomas.com/wp-content/uploads/2017/09/Screen-Shot-2017-09-17-at-8.22.15-AM.png?resize=266%2C300&amp;amp;ssl=1 266w, https://i2.wp.com/bcthomas.com/wp-content/uploads/2017/09/Screen-Shot-2017-09-17-at-8.22.15-AM.png?resize=768%2C865&amp;amp;ssl=1 768w, https://i2.wp.com/bcthomas.com/wp-content/uploads/2017/09/Screen-Shot-2017-09-17-at-8.22.15-AM.png?w=1410&amp;amp;ssl=1 1410w, https://i2.wp.com/bcthomas.com/wp-content/uploads/2017/09/Screen-Shot-2017-09-17-at-8.22.15-AM.png?w=1280 1280w&quot; sizes=&quot;(max-width: 640px) 100vw, 640px&quot; data-recalc-dims=&quot;1&quot; /&gt;&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;What this means, is that if you’re using CAU, it will fail to patch the cluster after the first host or two, depending on your resiliency, as it doesn’t have enough spare capacity left to take more disks out of maintenance mode, even though all the hosts are up and healthy.&lt;/p&gt;
+
+&lt;p&gt;You can check this by running the following Powershell on a cluster host&lt;/p&gt;
+
+&lt;pre class=&quot;lang:ps decode:true&quot;&gt;Get-StorageNode |%{$_.Name;$_ | Get-PhysicalDisk -PhysicallyConnected}&lt;/pre&gt;
+
+&lt;h2 id=&quot;workaround-and-fix&quot;&gt;Workaround and Fix&lt;/h2&gt;
+
+&lt;p&gt;Now, if you’ve already started patching and need to recover from this, you can use the following Powershell to remediate the hosts you’ve patched&lt;/p&gt;
+
+&lt;pre class=&quot;lang:ps decode:true &quot;&gt;Repair-ClusterStorageSpacesDirect -Node [hostname] -DisableStorageMaintenanceMode&lt;/pre&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://i0.wp.com/bcthomas.com/wp-content/uploads/2017/09/Screen-Shot-2017-09-17-at-8.57.09-AM.png?ssl=1&quot;&gt;&lt;img class=&quot;aligncenter size-large wp-image-94&quot; src=&quot;https://i0.wp.com/bcthomas.com/wp-content/uploads/2017/09/Screen-Shot-2017-09-17-at-8.57.09-AM-1024x577.png?resize=640%2C361&amp;#038;ssl=1&quot; alt=&quot;&quot; width=&quot;640&quot; height=&quot;361&quot; srcset=&quot;https://i0.wp.com/bcthomas.com/wp-content/uploads/2017/09/Screen-Shot-2017-09-17-at-8.57.09-AM.png?resize=1024%2C577&amp;amp;ssl=1 1024w, https://i0.wp.com/bcthomas.com/wp-content/uploads/2017/09/Screen-Shot-2017-09-17-at-8.57.09-AM.png?resize=300%2C169&amp;amp;ssl=1 300w, https://i0.wp.com/bcthomas.com/wp-content/uploads/2017/09/Screen-Shot-2017-09-17-at-8.57.09-AM.png?resize=768%2C433&amp;amp;ssl=1 768w, https://i0.wp.com/bcthomas.com/wp-content/uploads/2017/09/Screen-Shot-2017-09-17-at-8.57.09-AM.png?w=1416&amp;amp;ssl=1 1416w, https://i0.wp.com/bcthomas.com/wp-content/uploads/2017/09/Screen-Shot-2017-09-17-at-8.57.09-AM.png?w=1280 1280w&quot; sizes=&quot;(max-width: 640px) 100vw, 640px&quot; data-recalc-dims=&quot;1&quot; /&gt;&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;If you haven’t patched, then you can avoid this by choosing to ‘Pause and Don’t Drain’ your hosts in Failover Cluster Manager, and then manually live migrate your VMs and Virtual Disks to other cluster members before patching and rebooting the host, as this will avoid the physical disks being put into maintenance mode in the first place.&lt;/p&gt;
+
+&lt;h2 id=&quot;my-take-on-the-problem&quot;&gt;My take on the problem&lt;/h2&gt;
+
+&lt;p&gt;Having dealt with S2D for a while, I think what we’re seeing here is a change in behaviour to how maintenance is performed on S2D Cluster hosts, and so when this new logic has been pushed out with the September CU, it’s conflicting with the old logic and leaving things in a halfway house.&lt;/p&gt;
+
+&lt;p&gt;I very much doubt we will see this problem in next month’s patching, as it looks like once September CU is applied, the issue isn’t reproducible when putting hosts in and out of maintenance mode.&lt;/p&gt;
+
+&lt;p&gt;Hopefully this helps anyone else coming across this issue&lt;/p&gt;</content><author><name>Ben Thomas</name></author><category term="bug" /><category term="KB4038782" /><category term="Patching" /><category term="S2D" /><category term="September CU" /><category term="Storage Spaces Direct" /><category term="Windows Server" /><category term="WS2016" /><summary type="html">UPDATE(2017-09-19): Microsoft have officially recognized the bug and have a KB describing the symptoms and workaround much like the below. See here: https://support.microsoft.com/en-us/help/4043361/disks-in-maintenance-mode-status-after-september-cumulative-update-kb</summary></entry><entry><title type="html">S2D Storage Tiers misconfiguration bug</title><link href="http://localhost:4000/2016/11/s2d-storage-tiers-misconfiguration-bug/" rel="alternate" type="text/html" title="S2D Storage Tiers misconfiguration bug" /><published>2016-11-09T20:26:40+13:00</published><updated>2016-11-09T20:26:40+13:00</updated><id>http://localhost:4000/2016/11/s2d-storage-tiers-misconfiguration-bug</id><content type="html" xml:base="http://localhost:4000/2016/11/s2d-storage-tiers-misconfiguration-bug/">&lt;p&gt;I’ve been deploying a few Storage Spaces Direct (S2D) clusters lately, and I noticed a slight mis-configuration that can occur on deployment.&lt;/p&gt;
+
+&lt;p&gt;Normally when deploying S2D, the disk types in the nodes are detected and the fastest disk (usually NVMe or SSD) is assigned to the cache, while the next fastest is used for the Performance Tier and the slowest being used in the Capacity Tier. So if you have NVMe, SSD and HDD, you would end up with an NVMe Cache, a SSD Performance Tier and a HDD Capacity Tier. With only 2 disk types, either NVMe+SSD, NVMe+HDD or SSD+HDD, the fastest disk is used for Cache and the other used for both the Performance and Capacity Tiers.&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://i2.wp.com/bcthomas.com/wp-content/uploads/2016/11/S2D-Storage-Tiers-Expected-Settings.jpg?ssl=1&quot;&gt;&lt;img class=&quot;aligncenter size-full wp-image-79&quot; src=&quot;https://i2.wp.com/bcthomas.com/wp-content/uploads/2016/11/S2D-Storage-Tiers-Expected-Settings.jpg?resize=473%2C48&amp;#038;ssl=1&quot; alt=&quot;s2d-storage-tiers-expected-settings&quot; width=&quot;473&quot; height=&quot;48&quot; srcset=&quot;https://i2.wp.com/bcthomas.com/wp-content/uploads/2016/11/S2D-Storage-Tiers-Expected-Settings.jpg?w=473&amp;amp;ssl=1 473w, https://i2.wp.com/bcthomas.com/wp-content/uploads/2016/11/S2D-Storage-Tiers-Expected-Settings.jpg?resize=300%2C30&amp;amp;ssl=1 300w&quot; sizes=&quot;(max-width: 473px) 100vw, 473px&quot; data-recalc-dims=&quot;1&quot; /&gt;&lt;/a&gt;It seems there is a bug that is causing the Performance Tier to set its mediatype to the fastest disk in the system, even if that disk is already allocated to cache.&lt;/p&gt;
+
+&lt;p&gt;In my deployments, I’ve got 4x SSD and 12x HDD in each my hosts, with the expectation that the SSD is used for cache and the HDD is mirrored for the Performance Tier and in Parity for Capacity Tier. However even though the SSD is being assigned correctly to the Cache, the Performace Tier shows as an SSD mediatype, preventing me from deploying volumes with mirrored HDD until this is correctly.&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/11/S2D-Storage-Tiers-Actual-Settings.jpg?ssl=1&quot;&gt;&lt;img class=&quot;aligncenter size-full wp-image-78&quot; src=&quot;https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/11/S2D-Storage-Tiers-Actual-Settings.jpg?resize=475%2C54&amp;#038;ssl=1&quot; alt=&quot;s2d-storage-tiers-actual-settings&quot; width=&quot;475&quot; height=&quot;54&quot; srcset=&quot;https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/11/S2D-Storage-Tiers-Actual-Settings.jpg?w=475&amp;amp;ssl=1 475w, https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/11/S2D-Storage-Tiers-Actual-Settings.jpg?resize=300%2C34&amp;amp;ssl=1 300w&quot; sizes=&quot;(max-width: 475px) 100vw, 475px&quot; data-recalc-dims=&quot;1&quot; /&gt;&lt;/a&gt;You can check your own systems by running the below Powershell Command&lt;/p&gt;
+
+&lt;pre class=&quot;lang:ps decode:true &quot;&gt;Get-StorageTier | select FriendlyName, ResiliencySettingName, MediaType, PhysicalDiskRedundancy&lt;/pre&gt;
+
+&lt;p&gt;If you’ve got the same problem, it can be very easily corrected by simply changing the mediatype on the Tier back to HDD&lt;/p&gt;
+
+&lt;pre class=&quot;lang:ps decode:true &quot;&gt;Get-StorageTier -FriendlyName Performance | Set-StorageTier -MediaType HDD&lt;/pre&gt;
+
+&lt;p&gt;I’m sure there will be a permanent fix along for this soon, but in the mean time I hope this helps others who come across the same problem.&lt;/p&gt;</content><author><name>Ben Thomas</name></author><category term="bug" /><category term="S2D" /><category term="Storage Spaces Direct" /><category term="WS2016" /><summary type="html">I’ve been deploying a few Storage Spaces Direct (S2D) clusters lately, and I noticed a slight mis-configuration that can occur on deployment.</summary></entry><entry><title type="html">My Wishlist for System Center Virtual Machine Manager</title><link href="http://localhost:4000/2016/10/my-wishlist-for-system-center-virtual-machine-manager/" rel="alternate" type="text/html" title="My Wishlist for System Center Virtual Machine Manager" /><published>2016-10-25T11:40:36+13:00</published><updated>2016-10-25T11:40:36+13:00</updated><id>http://localhost:4000/2016/10/my-wishlist-for-system-center-virtual-machine-manager</id><content type="html" xml:base="http://localhost:4000/2016/10/my-wishlist-for-system-center-virtual-machine-manager/">&lt;p&gt;I’ve used System Center Virtual Machine Manager for a few years now, and I’ve come to like its ups and deal with its downs.&lt;/p&gt;
+
+&lt;p&gt;It has a lot of great features, like bare-metal deployments and logical networks, which when executed correctly are both huge time savers and take away a lot of human error.&lt;/p&gt;
+
+&lt;p&gt;With SCVMM, let’s start with some of a new additions in 2016:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Converting ‘Standard Switches’ on hosts to Logical Switches
+    &lt;ul&gt;
+      &lt;li&gt;Too often in the past I’ve retro-fitted VMM into a Hyper-V Environment and had to wrestle with removing existing Standard Switches and replacing them with Logical switches and had to deal with migrating VMs, losing connectivity, rolling back. Now all that pain is gone with a single button that allows you to convert your Standard Switch to a Logical Switch if one with matching properties exists.&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Full Orchestration for Rolling Cluster Upgrades
+    &lt;ul&gt;
+      &lt;li&gt;One of the coolest features of 2016 is Rolling Cluster upgrades, it makes upgrades forever easier by allowing you to run mixed mode clusters during an upgrade process and then raise then cluster functional level once all hosts are upgraded. Think of it like you would Active Directory and Domain Controllers, upgrade them all to the new level one at a time and then raise your functional level.&lt;/li&gt;
+      &lt;li&gt;VMM builds on top of this by combining it with bare-metal deployments to automate the entire process! How freaking cool is that? Especially with the next point&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Support for ‘Storage Spaces Direct’ and Storage QoS
+    &lt;ul&gt;
+      &lt;li&gt;You can deploy a complete hyperconverged cluster using VMMs bare-metal deployment&lt;/li&gt;
+      &lt;li&gt;Create new volumes on your S2D clusters&lt;/li&gt;
+      &lt;li&gt;Manage your Storage QoS policies with a nice GUI&lt;/li&gt;
+      &lt;li&gt;And many more storage tasks&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Now some of the things that I feel are still missing in VMM:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;‘Getting started’ GUI after initial installation
+    &lt;ul&gt;
+      &lt;li&gt;Anyone who’s deployed a VMware vCenter will know what I’m talking about, it’s that lovely ‘Getting Started’ tab on everything in the GUI that helps you work your way through creating your Datacenters (aka. Host Groups), Adding your hosts, creating your clusters, deploying your first VM. It makes dealing with vCenter for the first time just that little bit easier, and it doesn’t feel like you need a PHD to configure it or if you do something wrong the thing will implode.&lt;/li&gt;
+      &lt;li&gt;For those that have never touch VMware, here’s what I’m talking about &lt;a href=&quot;https://i0.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-24-at-10.58.45-PM.png?ssl=1&quot;&gt;&lt;img class=&quot;aligncenter size-large wp-image-69&quot; src=&quot;https://i0.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-24-at-10.58.45-PM-1024x697.png?resize=640%2C436&amp;#038;ssl=1&quot; alt=&quot;vCenter Datacenter Getting Started view&quot; width=&quot;640&quot; height=&quot;436&quot; srcset=&quot;https://i0.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-24-at-10.58.45-PM.png?resize=1024%2C697&amp;amp;ssl=1 1024w, https://i0.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-24-at-10.58.45-PM.png?resize=300%2C204&amp;amp;ssl=1 300w, https://i0.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-24-at-10.58.45-PM.png?resize=768%2C523&amp;amp;ssl=1 768w, https://i0.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-24-at-10.58.45-PM.png?w=1584&amp;amp;ssl=1 1584w, https://i0.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-24-at-10.58.45-PM.png?w=1280 1280w&quot; sizes=&quot;(max-width: 640px) 100vw, 640px&quot; data-recalc-dims=&quot;1&quot; /&gt;&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Advanced use of Storage QoS Features
+    &lt;ul&gt;
+      &lt;li&gt;Now creation of Storage QoS policies in VMM has a nice easy to use GUI in front of it, but they could’ve done so much more with it&lt;/li&gt;
+      &lt;li&gt;Delegation of policies to Clouds/Tenants so that VM admins can assign the right policies to their VMs without needing to be fabric admins&lt;/li&gt;
+      &lt;li&gt;Ability to set policies against VMs/Clouds/Host Groups. It’d be nice to get a default QoS policy against a cloud and have it automatically propagate to all child VM disks. And then be able to get more granular setting policies against a VM or specific disks on a VM that need special treatment. Instead my only option is to set a policy manually (or scripted) against even VM disk, just like if I didn’t have VMM.&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Quotas not counting compute resources of powered off VMs
+    &lt;ul&gt;
+      &lt;li&gt;Now quotas and Cloud Capacity limitations are a great way to give a department or client access to a subset of your resources and not have to worry about them consuming everything while you’re not looking, but what if that department if full of Devs who have multiple environments but only have 1 running at a time? Well they don’t need resources for all of their environments, but just enough to power on 1 of them. Too bad for you VMM counts the CPU and Memory usage of powered off VMs towards their Quota too.&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Configuration of VLANs on host physical adapters
+    &lt;ul&gt;
+      &lt;li&gt;Bare-metal deployment is great, it allows you to push out an identical configuration to all of your hosts. But what if you have NICs you don’t want to put on a switch, say for storage traffic? And they need to have a VLAN configured on them? Well VMM currently doesn’t let you do that. Instead after VMM has deployed the host you need to go through with your Set-NetAdapter command and configure those VLANs.&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Automatic configuration of VMQ settings for Bare-metal deployed hosts
+    &lt;ul&gt;
+      &lt;li&gt;VMQ is something all Hyper-V admins will struggle with at some stage or another. It would be nice if VMM could take away the pain when deploying hosts by looking at the host hardware, the networking it’s going to apply and then work out the best VMQ settings to apply.&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Tenant view of cloud capacity
+    &lt;ul&gt;
+      &lt;li&gt;Now this may seem obvious, but it’s not there. You as an Administrator can see the lovely cloud capacity view, however the tenant admin cannot.&lt;a href=&quot;https://i0.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-24-at-11.22.14-PM.png?ssl=1&quot;&gt;&lt;img class=&quot;aligncenter size-large wp-image-71&quot; src=&quot;https://i2.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-24-at-11.22.14-PM-1024x478.png?resize=640%2C299&amp;#038;ssl=1&quot; alt=&quot;VMM Cloud Summary View&quot; width=&quot;640&quot; height=&quot;299&quot; srcset=&quot;https://i0.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-24-at-11.22.14-PM.png?resize=1024%2C478&amp;amp;ssl=1 1024w, https://i0.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-24-at-11.22.14-PM.png?resize=300%2C140&amp;amp;ssl=1 300w, https://i0.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-24-at-11.22.14-PM.png?resize=768%2C359&amp;amp;ssl=1 768w, https://i0.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-24-at-11.22.14-PM.png?w=1314&amp;amp;ssl=1 1314w&quot; sizes=&quot;(max-width: 640px) 100vw, 640px&quot; data-recalc-dims=&quot;1&quot; /&gt;&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;No native support of Hyper-V Replica
+    &lt;ul&gt;
+      &lt;li&gt;This one for me is just mind-boggling. VMM by name is designed to sit overtop of Hyper-V to help you manage your VMs. How is it meant to do that though when it doesn’t support all the core Hyper-V features? Like say Hyper-V Replica?&lt;/li&gt;
+      &lt;li&gt;FYI don’t bother telling me if I integrate VMM with Azure Site Recovery then I’ll get Hyper-V Replica in VMM, because why should I pay for a cloud service to manage my on-prem service to manage my on-prem to on-prem service? That’s also just a lot of moving parts I don’t want to have to worry about.&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;One Powershell to rule them all
+    &lt;ul&gt;
+      &lt;li&gt;Again taking a leaf out of VMware’s book, it would be create if there was just 1 powershell module and 1 set of commands for managing Hyper-V hosts and VMs whether they be standalone hosts, in a cluster or managed by VMM.&lt;/li&gt;
+      &lt;li&gt;It would be nice if the VMM powershell commands returned at least the same details that their Hyper-V modules counterparts do – eg. where is my VM uptime in Get-SCVirtualMachine? And why must you alias Get-VM and break my scripts?&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;UPDATE: Tenants unable to update VM Configuration Versions
+    &lt;ul&gt;
+      &lt;li&gt;If the whole point of having Tenant Admins is to give power back to the users for all things related to their VMs, then why can’t they upgrade the VM Configuration version? Why must this be done by a fabric admin?&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;This may have ended up sounding a bit ranty, but I do like VMM, it does make my life easier on the whole when managing Hyper-V environments. If they could just get the last few pieces right, then I think we’d see more people coming across from VMware land.&lt;/p&gt;</content><author><name>Ben Thomas</name></author><category term="SCVMM" /><category term="System Center" /><category term="Virtual Machine Manager" /><category term="wishlist" /><summary type="html">I’ve used System Center Virtual Machine Manager for a few years now, and I’ve come to like its ups and deal with its downs.</summary><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="http://localhost:4000/wp-content/uploads/2016/10/system-center-virtual-machine-manager.png" /></entry><entry><title type="html">Identifying storage intensive VMs in Hyper-V 2016 Clusters</title><link href="http://localhost:4000/2016/10/identifying-storage-intensive-vms-in-hyper-v-2016-clusters/" rel="alternate" type="text/html" title="Identifying storage intensive VMs in Hyper-V 2016 Clusters" /><published>2016-10-07T09:17:24+13:00</published><updated>2016-10-07T09:17:24+13:00</updated><id>http://localhost:4000/2016/10/identifying-storage-intensive-vms-in-hyper-v-2016-clusters</id><content type="html" xml:base="http://localhost:4000/2016/10/identifying-storage-intensive-vms-in-hyper-v-2016-clusters/">&lt;p&gt;We’ve all had the case where there was a volume running hot on your cluster and you spend ages wrestling with perf counters to try to find that VM that’s causing your storage to burn. Well let me introduce you to a magical new command in Windows Server 2016&lt;/p&gt;
+
+&lt;pre class=&quot;lang:ps decode:true&quot;&gt;Get-StorageQoSFlow&lt;/pre&gt;
+
+&lt;p&gt;This miracle command can give you insights on all the VHD(x)s running on your cluster, revealing IOPS, Latency and Bandwidth stats for them all without the need for large-scale monitoring solutions.&lt;/p&gt;
+
+&lt;p&gt;Let’s look at a few examples of how we can use this to our advantage, starting with the top 5 busiest VHD(x)s&lt;/p&gt;
+
+&lt;pre class=&quot;wrap:true lang:ps decode:true&quot;&gt;Get-StorageQoSFlow -CimSession ClusterName | Sort-Object InitiatorIOPS -Descending | select -First 5&lt;/pre&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-06-at-8.45.34-PM.jpg?ssl=1&quot;&gt;&lt;img class=&quot;aligncenter wp-image-46 size-full&quot; src=&quot;https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-06-at-8.45.34-PM.jpg?resize=640%2C69&amp;#038;ssl=1&quot; alt=&quot;Get-StorageQoSFlow Top 5&quot; width=&quot;640&quot; height=&quot;69&quot; srcset=&quot;https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-06-at-8.45.34-PM.jpg?w=2284&amp;amp;ssl=1 2284w, https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-06-at-8.45.34-PM.jpg?resize=300%2C33&amp;amp;ssl=1 300w, https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-06-at-8.45.34-PM.jpg?resize=768%2C83&amp;amp;ssl=1 768w, https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-06-at-8.45.34-PM.jpg?resize=1024%2C111&amp;amp;ssl=1 1024w, https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-06-at-8.45.34-PM.jpg?w=1280 1280w, https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-06-at-8.45.34-PM.jpg?w=1920 1920w&quot; sizes=&quot;(max-width: 640px) 100vw, 640px&quot; data-recalc-dims=&quot;1&quot; /&gt;&lt;/a&gt;&lt;del&gt;&lt;/del&gt;In my example above, we can see straight away both the busiest machine, and exactly which of its disks is creating the load.&lt;/p&gt;
+
+&lt;p&gt;Next let’s move on to checking the performance of a specific VM, which would look like this&lt;/p&gt;
+
+&lt;pre class=&quot;wrap:true lang:ps decode:true&quot;&gt;Get-StorageQoSFlow -InitiatorName VMName -CimSession ClusterName&lt;/pre&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-06-at-9.01.33-PM.jpg?ssl=1&quot;&gt;&lt;img class=&quot;aligncenter wp-image-50 size-full&quot; src=&quot;https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-06-at-9.01.33-PM.jpg?resize=640%2C28&amp;#038;ssl=1&quot; alt=&quot;Get-StorageQoSFlow Specific VM&quot; width=&quot;640&quot; height=&quot;28&quot; srcset=&quot;https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-06-at-9.01.33-PM.jpg?w=2248&amp;amp;ssl=1 2248w, https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-06-at-9.01.33-PM.jpg?resize=300%2C13&amp;amp;ssl=1 300w, https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-06-at-9.01.33-PM.jpg?resize=768%2C33&amp;amp;ssl=1 768w, https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-06-at-9.01.33-PM.jpg?resize=1024%2C45&amp;amp;ssl=1 1024w, https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-06-at-9.01.33-PM.jpg?w=1280 1280w, https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-06-at-9.01.33-PM.jpg?w=1920 1920w&quot; sizes=&quot;(max-width: 640px) 100vw, 640px&quot; data-recalc-dims=&quot;1&quot; /&gt;&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Now these two uses of the command alone have already helped a fellow admin find several VMs that were thought to be idle, actually consuming around about 15,000 IOPS due to a few rough processes. These were precious IOPS that were better served being available to more critical services.&lt;/p&gt;
+
+&lt;p&gt;For bonus points, here are a few more commands to look at when looking for storage stats&lt;/p&gt;
+
+&lt;pre class=&quot;wrap:true lang:ps decode:true &quot;&gt;# Get stats for any CSV
+Get-StorageQoSVolume -CimSession ClusterName
+# Get stats for a Storage Spaces Direct Cluster
+Get-StorageSubSystem clu*  | Get-StorageHealthReport 
+Get-Volume -CimSession ClusterName | ?{$_.FileSystem -eq 'CSVFS'} | Get-StorageHealthReport -CimSession ClusterName&lt;/pre&gt;
+
+&lt;p&gt;Until next time!&lt;/p&gt;</content><author><name>Ben Thomas</name></author><category term="Hyper-V" /><category term="Powershell" /><category term="S2D" /><category term="Windows Server" /><category term="WS2016" /><summary type="html">We’ve all had the case where there was a volume running hot on your cluster and you spend ages wrestling with perf counters to try to find that VM that’s causing your storage to burn. Well let me introduce you to a magical new command in Windows Server 2016</summary></entry><entry><title type="html">Expanding Storage Spaces Direct Volumes</title><link href="http://localhost:4000/2016/10/expanding-storage-spaces-direct-volumes/" rel="alternate" type="text/html" title="Expanding Storage Spaces Direct Volumes" /><published>2016-10-04T08:53:46+13:00</published><updated>2016-10-04T08:53:46+13:00</updated><id>http://localhost:4000/2016/10/expanding-storage-spaces-direct-volumes</id><content type="html" xml:base="http://localhost:4000/2016/10/expanding-storage-spaces-direct-volumes/">&lt;p&gt;As many of you would have seen, Windows Server 2016 has been &lt;a href=&quot;https://blogs.technet.microsoft.com/hybridcloud/2016/09/26/announcing-the-launch-of-windows-server-2016/&quot;&gt;officially launched&lt;/a&gt;, with evaluation media available and General Availability slated for later this month.&lt;/p&gt;
+
+&lt;p&gt;One of the great new features in this release, is Storage Spaces Direct, a Software-Defined Storage Solution. There is already plenty of information available on how to get this up and running on &lt;a href=&quot;https://technet.microsoft.com/en-us/windows-server-docs/storage/storage-spaces/storage-spaces-direct-overview&quot;&gt;Technet&lt;/a&gt;, but I thought I’d share some of the operational tasks that aren’t so obvious, starting with expanding volumes.&lt;/p&gt;
+
+&lt;p&gt;Firstly we want to get the current size of the existing storage tiers that make up our volume&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-powershell&quot; data-lang=&quot;powershell&quot;&gt;&lt;span class=&quot;nb&quot;&gt;Get-VirtualDisk&lt;/span&gt; -FriendlyName vol1 | &lt;span class=&quot;nb&quot;&gt;Get-StorageTier&lt;/span&gt; | &lt;span class=&quot;nb&quot;&gt;Format-Table &lt;/span&gt;FriendlyName, @&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;Label&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;’Freespace&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;GB&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;’;Expression&lt;span class=&quot;o&quot;&gt;={&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$_&lt;/span&gt;.Size/1GB&lt;span class=&quot;o&quot;&gt;}}&lt;/span&gt; -autosize&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;figure id=&quot;attachment_29&quot; style=&quot;width: 300px&quot; class=&quot;wp-caption aligncenter&quot;&gt;
+
+&lt;img class=&quot;wp-image-29 size-medium&quot; src=&quot;https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-03-at-7.53.44-PM-300x73.png?resize=300%2C73&amp;#038;ssl=1&quot; alt=&quot;Current size of Storage Tiers&quot; width=&quot;300&quot; height=&quot;73&quot; srcset=&quot;https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-03-at-7.53.44-PM.png?resize=300%2C73&amp;amp;ssl=1 300w, https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-03-at-7.53.44-PM.png?w=446&amp;amp;ssl=1 446w&quot; sizes=&quot;(max-width: 300px) 100vw, 300px&quot; data-recalc-dims=&quot;1&quot; /&gt;&lt;figcaption class=&quot;wp-caption-text&quot;&gt;Current size of Storage Tiers&lt;/figcaption&gt;&lt;/figure&gt;
+
+&lt;p&gt;Now in this example, we’re using a Multi-Resiliency Virtual Disk, which allows us to combine the performance of Mirror with the efficiency of Parity to get the best of both worlds. Let’s say this volume has a SQL Server on it, and I know my working data set hasn’t increased but I’ve got lots of cold data and my volume is almost full. I want to just add capacity to the volume to continue to store more cold data.&lt;/p&gt;
+
+&lt;p&gt;We want to select just the Parity tier and expand that one&lt;/p&gt;
+
+&lt;div class=&quot;language-powershell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;Get-VirtualDisk&lt;/span&gt; -FriendlyName vol1 | &lt;span class=&quot;nb&quot;&gt;Get-StorageTier&lt;/span&gt; | ?&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$_&lt;/span&gt;.ResiliencySettingName -eq &lt;span class=&quot;s1&quot;&gt;'Parity'&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; | &lt;span class=&quot;nb&quot;&gt;Resize-StorageTier&lt;/span&gt; -Size 1000GB
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;And then expand the partition to match the new size&lt;/p&gt;
+
+&lt;div class=&quot;language-powershell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;Get-VirtualDisk&lt;/span&gt; -FriendlyName vol1 | &lt;span class=&quot;nb&quot;&gt;Get-Disk&lt;/span&gt; | &lt;span class=&quot;nb&quot;&gt;Get-Partition&lt;/span&gt; | ?&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$_&lt;/span&gt;.type -eq &lt;span class=&quot;s1&quot;&gt;'Basic'&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; | &lt;span class=&quot;nb&quot;&gt;Resize-Partition&lt;/span&gt; -Size 1100GB
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now if we check the storage tiers again we should see our new sizes&lt;/p&gt;
+
+&lt;pre class=&quot;wrap:true lang:ps decode:true &quot;&gt;Get-VirtualDisk -FriendlyName vol1 | Get-StorageTier | Format-Table FriendlyName, @{Label=’Freespace(GB)’;Expression={$_.Size/1GB}} -autosize&lt;/pre&gt;
+&lt;figure id=&quot;attachment_33&quot; style=&quot;width: 300px&quot; class=&quot;wp-caption aligncenter&quot;&gt;
+
+&lt;img class=&quot;size-medium wp-image-33&quot; src=&quot;https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-03-at-8.43.17-PM-300x72.png?resize=300%2C72&amp;#038;ssl=1&quot; alt=&quot;Size of Storage Tiers after expansion&quot; width=&quot;300&quot; height=&quot;72&quot; srcset=&quot;https://i0.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-03-at-8.43.17-PM.png?resize=300%2C72&amp;amp;ssl=1 300w, https://i0.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-03-at-8.43.17-PM.png?w=440&amp;amp;ssl=1 440w&quot; sizes=&quot;(max-width: 300px) 100vw, 300px&quot; data-recalc-dims=&quot;1&quot; /&gt;&lt;figcaption class=&quot;wp-caption-text&quot;&gt;Size of Storage Tiers after expansion&lt;/figcaption&gt;&lt;/figure&gt;
+
+&lt;p&gt;If you wanted to add more Performance Tier to your volume to account for an increase in your active working set, or the data that is write intensive, then you would just have to swap out Parity for Mirror in the command where we expanded the tier.&lt;/p&gt;
+
+&lt;p&gt;Shrinking of S2D (Storage Spaces Direct) volumes is not currently supported, however this is a less common scenario.&lt;/p&gt;
+
+&lt;p&gt;I’ll be posting more tips like this around Storage in Windows Server 2016 over the next few weeks&lt;/p&gt;
+
+&lt;p&gt; &lt;/p&gt;</content><author><name>Ben Thomas</name></author><category term="Powershell" /><category term="S2D" /><category term="Storage Spaces Direct" /><category term="Windows Server" /><category term="WS2016" /><summary type="html">As many of you would have seen, Windows Server 2016 has been officially launched, with evaluation media available and General Availability slated for later this month.</summary></entry><entry><title type="html">Speaking at Microsoft Ignite</title><link href="http://localhost:4000/2016/10/speaking-at-microsoft-ignite/" rel="alternate" type="text/html" title="Speaking at Microsoft Ignite" /><published>2016-10-03T05:57:38+13:00</published><updated>2016-10-03T05:57:38+13:00</updated><id>http://localhost:4000/2016/10/speaking-at-microsoft-ignite</id><content type="html" xml:base="http://localhost:4000/2016/10/speaking-at-microsoft-ignite/">&lt;p&gt;While sitting in LAX Airport with some time to kill I thought I’d reflect on the last week.&lt;/p&gt;
+
+&lt;p&gt;I’ve spent the last week at the Microsoft Ignite conference in Atlanta, and what a crazy but fantastic week it has been. Starting with only finding out 2 weeks before the start of the conference that I was invited to speak, frantically trying to sort accommodation and flights, and finally ending with speaking at the conference itself.&lt;/p&gt;
+
+&lt;p&gt;It was my first time speaking publicly, and I was super nervous about it, but luckily I had a band of seasoned speakers at the ready to walk me through it.&lt;figure style=&quot;width: 2147px&quot; class=&quot;wp-caption aligncenter&quot;&gt;&lt;/figure&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img class=&quot;size-medium&quot; src=&quot;https://lh3.googleusercontent.com/vS9p3-dKcfQUh2QkXFi9RxXm2bXA9zA5cQHod9btN6euAuOXNh_4dYKnbbdcJ-3lmdEuAJN7s23Kb2kwfJPMWj7SE1lpD8oo9SZBn1CIUkHXizBqvBoX25_wbI6dy1D7MxEj25nCoGGGsG9BlYbZtbhXdPwwQ26FRbaewUGdBQqiovoFlF37gQyk1Nr8PLuMCN5ZMZjmVA6pVpwOF63dzrsXVJcse3k2qKq4EUs3t9y3GDIATfxo2JZNAeeWDoBFUDbVczd9iV3BdXfQP_NXG0fGKcPahZnWyExbUlSZEB-W-R7dA-magPQRbqed0HFHYuW6G2KSqYdLAS2FgTNutjiqigeJBpG81MZN9RRqNUQKHi9Pl1-9NheC9eFIAzk5WlluEE57XMew3Hy9jeD4sU7dFWTx_mGFlKvXQzVK-zZVlXQDK-KF43jtRYK1R9WNpMdodnoHy-5vn2msxetD609k_KujEa9iIHE9eJdRSLb1upLcGCBKkuHjDENkos01kz2JSl3y_k8tPNLSlE-4-ktE90fWyE0iAk14TINrbtCOSZYl0gwlWE3hUDu3ZoJXL1oU_-cUzxLiZkjq4WM1WfAlPfgH-TfaS_bI-4zbET-nbUgu-w=w2148-h1606-no&quot; alt=&quot;Waiting for the room to fill up @ Ignite 2016&quot; width=&quot;2147&quot; height=&quot;1606&quot; /&gt;&amp;lt;figcaption class=&quot;wp-caption-text&quot;&amp;gt;Waiting for the room to fill up @ Ignite 2016&amp;lt;/figcaption&amp;gt;&amp;lt;/figure&amp;gt;&lt;/p&gt;
+
+&lt;p&gt;My piece was short though and more painless than expected, I feel I’ve now got a new achievement under my belt and I should make an effort to do more of these to build up confidence.&lt;/p&gt;
+
+&lt;p&gt;The rest of the event was a blast, I got to go see a bunch of awesome people talk, but even better was the chance to sit down and talk with them outside of the conference. I got some real insights from talking with Microsoft Employees, Vendors and other IT professionals that I wouldn’t have otherwise had access to in little old New Zealand.&lt;/p&gt;
+
+&lt;p&gt;I highly recommend anyone who is given the opportunity to speak publically, take it. It’ll be scary but it’s so worth it.&lt;/p&gt;
+
+&lt;p&gt;See the talk here: &lt;a href=&quot;https://youtu.be/-LK2ViRGbWs?t=41m59s&quot;&gt;https://youtu.be/-LK2ViRGbWs?t=41m59s&lt;/a&gt;&lt;/p&gt;</content><author><name>Ben Thomas</name></author><category term="Ignite" /><category term="MSIgnite" /><category term="S2D" /><category term="Speaking" /><summary type="html">While sitting in LAX Airport with some time to kill I thought I’d reflect on the last week.</summary><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="http://localhost:4000/wp-content/uploads/2016/10/IMG_20160930_083438.jpg" /></entry><entry><title type="html">Time for another Tech Blog</title><link href="http://localhost:4000/2016/09/time-for-another-tech-blog/" rel="alternate" type="text/html" title="Time for another Tech Blog" /><published>2016-09-25T06:14:15+13:00</published><updated>2016-09-25T06:14:15+13:00</updated><id>http://localhost:4000/2016/09/time-for-another-tech-blog</id><content type="html" xml:base="http://localhost:4000/2016/09/time-for-another-tech-blog/">&lt;p&gt;I’ve decided it’s time to get more active online, I’ve always been lurking in forums and posting on Reddit, but I want to give back more.&lt;/p&gt;
+
+&lt;p&gt;For me, blogs are one of the biggest sources of information when looking at new technology. Whether it’s an honest review of a product or a deployment guide that highlights all the ‘gotchas’ that would otherwise catch out first timers.&lt;/p&gt;
+
+&lt;p&gt;So I’m going to give it my best shot to write at least one useful post a week, sharing gotchas and other learnings that might help someone else out.&lt;/p&gt;
+
+&lt;p&gt;Next week will probably be an exception though as I’ll be attending the Microsoft Ignite event in Atlanta, as I was lucky enough to be invited to speak this year!&lt;/p&gt;
+
+&lt;p&gt;So if you’re at Ignite, check out the Storage Spaces Direct talks and you might see me hanging round.&lt;/p&gt;</content><author><name>Ben Thomas</name></author><category term="Ignite" /><summary type="html">I’ve decided it’s time to get more active online, I’ve always been lurking in forums and posting on Reddit, but I want to give back more.</summary></entry><entry><title type="html">You’re up and running!</title><link href="http://localhost:4000/Hello-World/" rel="alternate" type="text/html" title="You're up and running!" /><published>2014-03-03T00:00:00+13:00</published><updated>2014-03-03T00:00:00+13:00</updated><id>http://localhost:4000/Hello-World</id><content type="html" xml:base="http://localhost:4000/Hello-World/">&lt;p&gt;Next you can update your site name, avatar and other options using the _config.yml file in the root of your repository (shown below).&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/config.png&quot; alt=&quot;_config.yml&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The easiest way to make your first post is to edit this one. Go into /_posts/ and update the Hello World markdown file. For more instructions head over to the &lt;a href=&quot;https://github.com/barryclark/jekyll-now&quot;&gt;Jekyll Now repository&lt;/a&gt; on GitHub.&lt;/p&gt;</content><author><name></name></author><summary type="html">Next you can update your site name, avatar and other options using the _config.yml file in the root of your repository (shown below).</summary></entry></feed>
