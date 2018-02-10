@@ -56,6 +56,15 @@
       <article class="post">
   <h1>Identifying storage intensive VMs in Hyper-V 2016 Clusters</h1>
 
+  <div class="tags">
+    
+    
+        <span class="tag">
+            <a href="/category/Hyper-V">#Hyper-V</a>
+        </span>
+    
+  </div>
+
   <div class="entry">
     <p>We’ve all had the case where there was a volume running hot on your cluster and you spend ages wrestling with perf counters to try to find that VM that’s causing your storage to burn. Well let me introduce you to a magical new command in Windows Server 2016</p>
 
@@ -91,6 +100,17 @@ Get-Volume -CimSession ClusterName | ?{$_.FileSystem -eq 'CSVFS'} | Get-StorageH
 
   <div class="date">
     Written on October  7, 2016
+  </div>
+  
+  <div class="related">
+    <h3>Related Posts</h3>
+    
+    
+    
+        
+
+        
+    
   </div>
 
   

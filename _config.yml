@@ -11,6 +11,18 @@ description: "Just another Sysadmin's thoughts"
 # URL of your avatar or profile pic (you could use your GitHub profile pic)
 avatar: https://raw.githubusercontent.com/barryclark/jekyll-now/master/images/jekyll-logo.png
 
+collections:
+  category:
+    output: true
+
+defaults: 
+  - 
+    scope:
+      path: ""
+      type: category
+    values:
+      layout: "category"
+
 #
 # Flags below are optional
 #
