@@ -26,9 +26,9 @@ One of the great new features in this release, is Storage Spaces Direct, a Softw
 
 Firstly we want to get the current size of the existing storage tiers that make up our volume
 
-{% highlight powershell %}
+```powershell
 Get-VirtualDisk -FriendlyName vol1 | Get-StorageTier | Format-Table FriendlyName, @{Label=’Freespace(GB)’;Expression={$_.Size/1GB}} -autosize
-{% endhighlight %}
+```
 <figure id="attachment_29" style="width: 300px" class="wp-caption aligncenter">
 
 <img class="wp-image-29 size-medium" src="https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-03-at-7.53.44-PM-300x73.png?resize=300%2C73&#038;ssl=1" alt="Current size of Storage Tiers" width="300" height="73" srcset="https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-03-at-7.53.44-PM.png?resize=300%2C73&ssl=1 300w, https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-03-at-7.53.44-PM.png?w=446&ssl=1 446w" sizes="(max-width: 300px) 100vw, 300px" data-recalc-dims="1" /><figcaption class="wp-caption-text">Current size of Storage Tiers</figcaption></figure> 
@@ -50,7 +50,10 @@ Get-VirtualDisk -FriendlyName vol1 | Get-Disk | Get-Partition | ?{$_.type -eq 'B
 
 Now if we check the storage tiers again we should see our new sizes
 
-<pre class="wrap:true lang:ps decode:true ">Get-VirtualDisk -FriendlyName vol1 | Get-StorageTier | Format-Table FriendlyName, @{Label=’Freespace(GB)’;Expression={$_.Size/1GB}} -autosize</pre><figure id="attachment_33" style="width: 300px" class="wp-caption aligncenter">
+```powershell
+Get-VirtualDisk -FriendlyName vol1 | Get-StorageTier | Format-Table FriendlyName, @{Label=’Freespace(GB)’;Expression={$_.Size/1GB}} -autosize
+```
+<figure id="attachment_33" style="width: 300px" class="wp-caption aligncenter">
 
 <img class="size-medium wp-image-33" src="https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-03-at-8.43.17-PM-300x72.png?resize=300%2C72&#038;ssl=1" alt="Size of Storage Tiers after expansion" width="300" height="72" srcset="https://i0.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-03-at-8.43.17-PM.png?resize=300%2C72&ssl=1 300w, https://i0.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-03-at-8.43.17-PM.png?w=440&ssl=1 440w" sizes="(max-width: 300px) 100vw, 300px" data-recalc-dims="1" /><figcaption class="wp-caption-text">Size of Storage Tiers after expansion</figcaption></figure> 
 
