@@ -55,7 +55,7 @@ Now, if you&#8217;ve already started patching and need to recover from this, you
 
 ```powershell
 Repair-ClusterStorageSpacesDirect -Node [hostname] -DisableStorageMaintenanceMode
-
+```
 
 [<img class="aligncenter size-large wp-image-94" src="https://i0.wp.com/bcthomas.com/wp-content/uploads/2017/09/Screen-Shot-2017-09-17-at-8.57.09-AM-1024x577.png?resize=640%2C361&#038;ssl=1" alt="" width="640" height="361" srcset="https://i0.wp.com/bcthomas.com/wp-content/uploads/2017/09/Screen-Shot-2017-09-17-at-8.57.09-AM.png?resize=1024%2C577&ssl=1 1024w, https://i0.wp.com/bcthomas.com/wp-content/uploads/2017/09/Screen-Shot-2017-09-17-at-8.57.09-AM.png?resize=300%2C169&ssl=1 300w, https://i0.wp.com/bcthomas.com/wp-content/uploads/2017/09/Screen-Shot-2017-09-17-at-8.57.09-AM.png?resize=768%2C433&ssl=1 768w, https://i0.wp.com/bcthomas.com/wp-content/uploads/2017/09/Screen-Shot-2017-09-17-at-8.57.09-AM.png?w=1416&ssl=1 1416w, https://i0.wp.com/bcthomas.com/wp-content/uploads/2017/09/Screen-Shot-2017-09-17-at-8.57.09-AM.png?w=1280 1280w" sizes="(max-width: 640px) 100vw, 640px" data-recalc-dims="1" />](https://i0.wp.com/bcthomas.com/wp-content/uploads/2017/09/Screen-Shot-2017-09-17-at-8.57.09-AM.png?ssl=1)
 
