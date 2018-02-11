@@ -23,7 +23,7 @@ defaults:
     values:
       layout: "category"
 
-theme: jekyll-theme-architect
+#theme: jekyll-theme-architect
 
 #
 # Flags below are optional
