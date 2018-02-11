@@ -73,6 +73,19 @@
       <article class="post">
   <h1>S2D Storage Tiers misconfiguration bug</h1>
 
+  <div class="tags">		
+    		
+    		
+        <span class="tag">		
+            <a href="/category/Storage Spaces Direct">#Storage Spaces Direct</a>		
+        </span>		
+    		
+        <span class="tag">		
+            <a href="/category/Windows Server">#Windows Server</a>		
+        </span>		
+    		
+  </div>
+
   <div class="entry">
     <p>I’ve been deploying a few Storage Spaces Direct (S2D) clusters lately, and I noticed a slight mis-configuration that can occur on deployment.</p>
 
@@ -98,39 +111,6 @@
 
   <div class="date">
     Written on November  9, 2016
-  </div>
-
-  <div class="m-t-3 text-justify">
-    <p>I’ve been deploying a few Storage Spaces Direct (S2D) clusters lately, and I noticed a slight mis-configuration that can occur on deployment.</p>
-
-<p>Normally when deploying S2D, the disk types in the nodes are detected and the fastest disk (usually NVMe or SSD) is assigned to the cache, while the next fastest is used for the Performance Tier and the slowest being used in the Capacity Tier. So if you have NVMe, SSD and HDD, you would end up with an NVMe Cache, a SSD Performance Tier and a HDD Capacity Tier. With only 2 disk types, either NVMe+SSD, NVMe+HDD or SSD+HDD, the fastest disk is used for Cache and the other used for both the Performance and Capacity Tiers.</p>
-
-<p><a href="https://i2.wp.com/bcthomas.com/wp-content/uploads/2016/11/S2D-Storage-Tiers-Expected-Settings.jpg?ssl=1"><img class="aligncenter size-full wp-image-79" src="https://i2.wp.com/bcthomas.com/wp-content/uploads/2016/11/S2D-Storage-Tiers-Expected-Settings.jpg?resize=473%2C48&#038;ssl=1" alt="s2d-storage-tiers-expected-settings" width="473" height="48" srcset="https://i2.wp.com/bcthomas.com/wp-content/uploads/2016/11/S2D-Storage-Tiers-Expected-Settings.jpg?w=473&amp;ssl=1 473w, https://i2.wp.com/bcthomas.com/wp-content/uploads/2016/11/S2D-Storage-Tiers-Expected-Settings.jpg?resize=300%2C30&amp;ssl=1 300w" sizes="(max-width: 473px) 100vw, 473px" data-recalc-dims="1" /></a>It seems there is a bug that is causing the Performance Tier to set its mediatype to the fastest disk in the system, even if that disk is already allocated to cache.</p>
-
-<p>In my deployments, I’ve got 4x SSD and 12x HDD in each my hosts, with the expectation that the SSD is used for cache and the HDD is mirrored for the Performance Tier and in Parity for Capacity Tier. However even though the SSD is being assigned correctly to the Cache, the Performace Tier shows as an SSD mediatype, preventing me from deploying volumes with mirrored HDD until this is correctly.</p>
-
-<p><a href="https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/11/S2D-Storage-Tiers-Actual-Settings.jpg?ssl=1"><img class="aligncenter size-full wp-image-78" src="https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/11/S2D-Storage-Tiers-Actual-Settings.jpg?resize=475%2C54&#038;ssl=1" alt="s2d-storage-tiers-actual-settings" width="475" height="54" srcset="https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/11/S2D-Storage-Tiers-Actual-Settings.jpg?w=475&amp;ssl=1 475w, https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/11/S2D-Storage-Tiers-Actual-Settings.jpg?resize=300%2C34&amp;ssl=1 300w" sizes="(max-width: 475px) 100vw, 475px" data-recalc-dims="1" /></a>You can check your own systems by running the below Powershell Command</p>
-
-<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">Get-StorageTier</span> | <span class="nb">select </span>FriendlyName, ResiliencySettingName, MediaType, PhysicalDiskRedundancy
-</code></pre></div></div>
-
-<p>If you’ve got the same problem, it can be very easily corrected by simply changing the mediatype on the Tier back to HDD</p>
-
-<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">Get-StorageTier</span> -FriendlyName Performance | <span class="nb">Set-StorageTier</span> -MediaType HDD
-</code></pre></div></div>
-
-<p>I’m sure there will be a permanent fix along for this soon, but in the mean time I hope this helps others who come across the same problem.</p>
-
-  
-    
-    
-    
-  
-    
-  
-    <p class="m-t-3 text-muted font-italic">
-      <small>Posted</small>
-    </p>
   </div>
   
   <div class="related">

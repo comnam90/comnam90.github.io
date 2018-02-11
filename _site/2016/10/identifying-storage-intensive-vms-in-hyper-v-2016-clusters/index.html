@@ -73,6 +73,15 @@
       <article class="post">
   <h1>Identifying storage intensive VMs in Hyper-V 2016 Clusters</h1>
 
+  <div class="tags">		
+    		
+    		
+        <span class="tag">		
+            <a href="/category/Hyper-V">#Hyper-V</a>		
+        </span>		
+    		
+  </div>
+
   <div class="entry">
     <p>We’ve all had the case where there was a volume running hot on your cluster and you spend ages wrestling with perf counters to try to find that VM that’s causing your storage to burn. Well let me introduce you to a magical new command in Windows Server 2016</p>
 
@@ -114,55 +123,6 @@ Get-Volume</span> -CimSession ClusterName | ?<span class="o">{</span><span class
 
   <div class="date">
     Written on October  7, 2016
-  </div>
-
-  <div class="m-t-3 text-justify">
-    <p>We’ve all had the case where there was a volume running hot on your cluster and you spend ages wrestling with perf counters to try to find that VM that’s causing your storage to burn. Well let me introduce you to a magical new command in Windows Server 2016</p>
-
-<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Get-StorageQoSFlow
-</code></pre></div></div>
-
-<p>This miracle command can give you insights on all the VHD(x)s running on your cluster, revealing IOPS, Latency and Bandwidth stats for them all without the need for large-scale monitoring solutions.</p>
-
-<p>Let’s look at a few examples of how we can use this to our advantage, starting with the top 5 busiest VHD(x)s</p>
-
-<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Get-StorageQoSFlow -CimSession ClusterName | <span class="nb">Sort-Object </span>InitiatorIOPS -Descending | <span class="nb">select</span> -First 5
-</code></pre></div></div>
-
-<p><a href="https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-06-at-8.45.34-PM.jpg?ssl=1"><img class="aligncenter wp-image-46 size-full" src="https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-06-at-8.45.34-PM.jpg?resize=640%2C69&#038;ssl=1" alt="Get-StorageQoSFlow Top 5" width="640" height="69" srcset="https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-06-at-8.45.34-PM.jpg?w=2284&amp;ssl=1 2284w, https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-06-at-8.45.34-PM.jpg?resize=300%2C33&amp;ssl=1 300w, https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-06-at-8.45.34-PM.jpg?resize=768%2C83&amp;ssl=1 768w, https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-06-at-8.45.34-PM.jpg?resize=1024%2C111&amp;ssl=1 1024w, https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-06-at-8.45.34-PM.jpg?w=1280 1280w, https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-06-at-8.45.34-PM.jpg?w=1920 1920w" sizes="(max-width: 640px) 100vw, 640px" data-recalc-dims="1" /></a><del></del></p>
-
-<p>In my example above, we can see straight away both the busiest machine, and exactly which of its disks is creating the load.</p>
-
-<p>Next let’s move on to checking the performance of a specific VM, which would look like this</p>
-
-<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Get-StorageQoSFlow -InitiatorName VMName -CimSession ClusterName
-</code></pre></div></div>
-
-<p><a href="https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-06-at-9.01.33-PM.jpg?ssl=1"><img class="aligncenter wp-image-50 size-full" src="https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-06-at-9.01.33-PM.jpg?resize=640%2C28&#038;ssl=1" alt="Get-StorageQoSFlow Specific VM" width="640" height="28" srcset="https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-06-at-9.01.33-PM.jpg?w=2248&amp;ssl=1 2248w, https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-06-at-9.01.33-PM.jpg?resize=300%2C13&amp;ssl=1 300w, https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-06-at-9.01.33-PM.jpg?resize=768%2C33&amp;ssl=1 768w, https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-06-at-9.01.33-PM.jpg?resize=1024%2C45&amp;ssl=1 1024w, https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-06-at-9.01.33-PM.jpg?w=1280 1280w, https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-06-at-9.01.33-PM.jpg?w=1920 1920w" sizes="(max-width: 640px) 100vw, 640px" data-recalc-dims="1" /></a></p>
-
-<p>Now these two uses of the command alone have already helped a fellow admin find several VMs that were thought to be idle, actually consuming around about 15,000 IOPS due to a few rough processes. These were precious IOPS that were better served being available to more critical services.</p>
-
-<p>For bonus points, here are a few more commands to look at when looking for storage stats</p>
-
-<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Get stats for any CSV</span>
-Get-StorageQoSVolume -CimSession ClusterName
-<span class="c1"># Get stats for a Storage Spaces Direct Cluster</span>
-<span class="nb">Get-StorageSubSystem </span>clu<span class="k">*</span>  | <span class="nb">Get-StorageHealthReport 
-Get-Volume</span> -CimSession ClusterName | ?<span class="o">{</span><span class="nv">$_</span>.FileSystem -eq <span class="s1">'CSVFS'</span><span class="o">}</span> | <span class="nb">Get-StorageHealthReport</span> -CimSession ClusterName
-</code></pre></div></div>
-
-<p>Until next time!</p>
-
-  
-    
-    
-    
-  
-    
-  
-    <p class="m-t-3 text-muted font-italic">
-      <small>Posted</small>
-    </p>
   </div>
   
   <div class="related">
