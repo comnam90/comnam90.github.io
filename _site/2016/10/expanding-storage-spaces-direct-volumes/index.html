@@ -73,15 +73,20 @@
       <article class="post">
   <h1>Expanding Storage Spaces Direct Volumes</h1>
 
-  <div class="tags">		
+  <div class="tags">
+    <i>Tags:</i>
     		
     		
         <span class="tag">		
-            <a href="/category/Storage Spaces Direct">#Storage Spaces Direct</a>		
+            <a href="/tag/powershell">#powershell</a>		
         </span>		
     		
         <span class="tag">		
-            <a href="/category/Windows Server">#Windows Server</a>		
+            <a href="/tag/s2d">#s2d</a>		
+        </span>		
+    		
+        <span class="tag">		
+            <a href="/tag/ws2016">#ws2016</a>		
         </span>		
     		
   </div>
@@ -93,8 +98,9 @@
 
 <p>Firstly we want to get the current size of the existing storage tiers that make up our volume</p>
 
-<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">Get-VirtualDisk</span> -FriendlyName vol1 | <span class="nb">Get-StorageTier</span> | <span class="nb">Format-Table </span>FriendlyName, @<span class="o">{</span><span class="nv">Label</span><span class="o">=</span>’Freespace<span class="o">(</span>GB<span class="o">)</span>’;Expression<span class="o">={</span><span class="nv">$_</span>.Size/1GB<span class="o">}}</span> -autosize
-</code></pre></div></div>
+<figure class="highlight"><pre><code class="language-powershell" data-lang="powershell"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+</pre></td><td class="code"><pre><span class="nb">Get-VirtualDisk</span> -FriendlyName vol1 | <span class="nb">Get-StorageTier</span> | <span class="nb">Format-Table </span>FriendlyName, @<span class="o">{</span><span class="nv">Label</span><span class="o">=</span>’Freespace<span class="o">(</span>GB<span class="o">)</span>’;Expression<span class="o">={</span><span class="nv">$_</span>.Size/1GB<span class="o">}}</span> -autosize</pre></td></tr></tbody></table></code></pre></figure>
+
 <figure id="attachment_29" style="width: 300px" class="wp-caption aligncenter">
 
 <img class="wp-image-29 size-medium" src="https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-03-at-7.53.44-PM-300x73.png?resize=300%2C73&#038;ssl=1" alt="Current size of Storage Tiers" width="300" height="73" srcset="https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-03-at-7.53.44-PM.png?resize=300%2C73&amp;ssl=1 300w, https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-03-at-7.53.44-PM.png?w=446&amp;ssl=1 446w" sizes="(max-width: 300px) 100vw, 300px" data-recalc-dims="1" /><figcaption class="wp-caption-text">Current size of Storage Tiers</figcaption></figure>
@@ -103,18 +109,19 @@
 
 <p>We want to select just the Parity tier and expand that one</p>
 
-<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">Get-VirtualDisk</span> -FriendlyName vol1 | <span class="nb">Get-StorageTier</span> | ?<span class="o">{</span><span class="nv">$_</span>.ResiliencySettingName -eq <span class="s1">'Parity'</span><span class="o">}</span> | <span class="nb">Resize-StorageTier</span> -Size 1000GB
-</code></pre></div></div>
+<figure class="highlight"><pre><code class="language-powershell" data-lang="powershell"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+</pre></td><td class="code"><pre><span class="nb">Get-VirtualDisk</span> -FriendlyName vol1 | <span class="nb">Get-StorageTier</span> | ?<span class="o">{</span><span class="nv">$_</span>.ResiliencySettingName -eq <span class="s1">'Parity'</span><span class="o">}</span> | <span class="nb">Resize-StorageTier</span> -Size 1000GB</pre></td></tr></tbody></table></code></pre></figure>
 
 <p>And then expand the partition to match the new size</p>
 
-<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">Get-VirtualDisk</span> -FriendlyName vol1 | <span class="nb">Get-Disk</span> | <span class="nb">Get-Partition</span> | ?<span class="o">{</span><span class="nv">$_</span>.type -eq <span class="s1">'Basic'</span><span class="o">}</span> | <span class="nb">Resize-Partition</span> -Size 1100GB
-</code></pre></div></div>
+<figure class="highlight"><pre><code class="language-powershell" data-lang="powershell"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+</pre></td><td class="code"><pre><span class="nb">Get-VirtualDisk</span> -FriendlyName vol1 | <span class="nb">Get-Disk</span> | <span class="nb">Get-Partition</span> | ?<span class="o">{</span><span class="nv">$_</span>.type -eq <span class="s1">'Basic'</span><span class="o">}</span> | <span class="nb">Resize-Partition</span> -Size 1100GB</pre></td></tr></tbody></table></code></pre></figure>
 
 <p>Now if we check the storage tiers again we should see our new sizes</p>
 
-<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">Get-VirtualDisk</span> -FriendlyName vol1 | <span class="nb">Get-StorageTier</span> | <span class="nb">Format-Table </span>FriendlyName, @<span class="o">{</span><span class="nv">Label</span><span class="o">=</span>’Freespace<span class="o">(</span>GB<span class="o">)</span>’;Expression<span class="o">={</span><span class="nv">$_</span>.Size/1GB<span class="o">}}</span> -autosize
-</code></pre></div></div>
+<figure class="highlight"><pre><code class="language-powershell" data-lang="powershell"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+</pre></td><td class="code"><pre><span class="nb">Get-VirtualDisk</span> -FriendlyName vol1 | <span class="nb">Get-StorageTier</span> | <span class="nb">Format-Table </span>FriendlyName, @<span class="o">{</span><span class="nv">Label</span><span class="o">=</span>’Freespace<span class="o">(</span>GB<span class="o">)</span>’;Expression<span class="o">={</span><span class="nv">$_</span>.Size/1GB<span class="o">}}</span> -autosize</pre></td></tr></tbody></table></code></pre></figure>
+
 <figure id="attachment_33" style="width: 300px" class="wp-caption aligncenter">
 
 <img class="size-medium wp-image-33" src="https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-03-at-8.43.17-PM-300x72.png?resize=300%2C72&#038;ssl=1" alt="Size of Storage Tiers after expansion" width="300" height="72" srcset="https://i0.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-03-at-8.43.17-PM.png?resize=300%2C72&amp;ssl=1 300w, https://i0.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-03-at-8.43.17-PM.png?w=440&amp;ssl=1 440w" sizes="(max-width: 300px) 100vw, 300px" data-recalc-dims="1" /><figcaption class="wp-caption-text">Size of Storage Tiers after expansion</figcaption></figure>
@@ -132,6 +139,29 @@
   <div class="date">
     Written on October  4, 2016
   </div>
+
+  <div class="category">
+    <i>Posted in: </i>	
+    		
+    		
+        <span class="tag">		
+            <a href="/category/Storage Spaces Direct">#Storage Spaces Direct</a>		
+        </span>		
+    		
+        <span class="tag">		
+            <a href="/category/Windows Server">#Windows Server</a>		
+        </span>		
+    
+  </div>
+
+  <nav class="post_navigation">
+        
+          <a href="/2016/10/speaking-at-microsoft-ignite/">&laquo; Speaking at Microsoft Ignite</a>
+        
+        
+          <a href="/2016/10/identifying-storage-intensive-vms-in-hyper-v-2016-clusters/">Identifying storage intensive VMs in Hyper-V 2016 Clusters &raquo;</a>
+        
+  </nav>
   
   <div class="related">
     <h3>Related Posts</h3>
@@ -181,6 +211,11 @@
 </article>
 
     </div>
+
+   <section id="sidebar" class="col-md-4 col-md-offset-1">
+      This is a side bar
+
+   </section> 
 
     <div class="wrapper-footer">
       <div class="container">

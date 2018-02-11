@@ -5,11 +5,12 @@ layout: default
 <article class="post">
   <h1>{{ page.title }}</h1>
 
-  <div class="tags">		
-    {% assign sortedCategories = page.categories | sort %}		
-    {% for category in sortedCategories %}		
+  <div class="tags">
+    <i>Tags:</i>
+    {% assign sortedTags = page.tags | sort %}		
+    {% for tag in sortedTags %}		
         <span class="tag">		
-            <a href="/category/{{ category }}">#{{ category }}</a>		
+            <a href="/tag/{{ tag }}">#{{ tag }}</a>		
         </span>		
     {% endfor %}		
   </div>
@@ -21,6 +22,25 @@ layout: default
   <div class="date">
     Written on {{ page.date | date: "%B %e, %Y" }}
   </div>
+
+  <div class="category">
+    <i>Posted in: </i>	
+    {% assign sortedCategories = page.categories | sort %}		
+    {% for category in sortedCategories %}		
+        <span class="tag">		
+            <a href="/category/{{ category }}">#{{ category }}</a>		
+        </span>		
+    {% endfor %}
+  </div>
+
+  <nav class="post_navigation">
+        {% if page.previous.url %}
+          <a href="{{ page.previous.url }}">&laquo; {{ page.previous.title }}</a>
+        {% endif %}
+        {% if page.next.url %}
+          <a href="{{ page.next.url }}">{{ page.next.title }} &raquo;</a>
+        {% endif %}
+  </nav>
   
   <div class="related">
     <h3>Related Posts</h3>

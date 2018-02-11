@@ -13,11 +13,8 @@ force_ssl_children:
 image: /wp-content/uploads/2016/10/system-center-virtual-machine-manager.png
 categories:
   - System Center
-  - Virtual Machine Manager
 tags:
-  - SCVMM
-  - System Center
-  - Virtual Machine Manager
+  - scvmm
   - wishlist
 ---
 I&#8217;ve used System Center Virtual Machine Manager for a few years now, and I&#8217;ve come to like its ups and deal with its downs.

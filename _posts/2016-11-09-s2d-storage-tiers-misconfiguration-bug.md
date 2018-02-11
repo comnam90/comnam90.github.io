@@ -14,9 +14,8 @@ categories:
   - Storage Spaces Direct
   - Windows Server
 tags:
-  - bug
+  - bugs
   - S2D
-  - Storage Spaces Direct
   - WS2016
 ---
 I&#8217;ve been deploying a few Storage Spaces Direct (S2D) clusters lately, and I noticed a slight mis-configuration that can occur on deployment.
@@ -29,14 +28,14 @@ In my deployments, I&#8217;ve got 4x SSD and 12x HDD in each my hosts, with the 
 
 [<img class="aligncenter size-full wp-image-78" src="https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/11/S2D-Storage-Tiers-Actual-Settings.jpg?resize=475%2C54&#038;ssl=1" alt="s2d-storage-tiers-actual-settings" width="475" height="54" srcset="https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/11/S2D-Storage-Tiers-Actual-Settings.jpg?w=475&ssl=1 475w, https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/11/S2D-Storage-Tiers-Actual-Settings.jpg?resize=300%2C34&ssl=1 300w" sizes="(max-width: 475px) 100vw, 475px" data-recalc-dims="1" />](https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/11/S2D-Storage-Tiers-Actual-Settings.jpg?ssl=1)You can check your own systems by running the below Powershell Command
 
-```powershell
+{% highlight powershell linenos %}
 Get-StorageTier | select FriendlyName, ResiliencySettingName, MediaType, PhysicalDiskRedundancy
-```
+{% endhighlight %}
 
 If you&#8217;ve got the same problem, it can be very easily corrected by simply changing the mediatype on the Tier back to HDD
 
-```powershell
+{% highlight powershell linenos %}
 Get-StorageTier -FriendlyName Performance | Set-StorageTier -MediaType HDD
-```
+{% endhighlight %}
 
 I&#8217;m sure there will be a permanent fix along for this soon, but in the mean time I hope this helps others who come across the same problem.

@@ -1,13 +1,13 @@
 ---
-layout: default
+layout: page
 ---
 
 {% capture page_subtitle %}Articles by tag{% endcapture %}
 
 
 <div class="text-justify">
-  {% if site.tags[page.tag] %}
-    {% for post in site.tags[page.tag] %}
+  {% if site.tags[page.tags] %}
+    {% for post in site.tags[page.tags] %}
       {% capture post_year %}{{ post.date | date: '%Y' }}{% endcapture %}
       {% if forloop.first %}
         <h3 class="m-t-3 m-b-1">{{ post_year }}</h3>
@@ -15,7 +15,7 @@ layout: default
       {% endif %}
       {% unless forloop.first %}
         {% assign previous_index = forloop.index0 | minus: 1 %}
-        {% capture previous_post_year %}{{ site.tags[page.title][previous_index].date | date: '%Y' }}{% endcapture %}
+        {% capture previous_post_year %}{{ site.tags[page.tags][previous_index].date | date: '%Y' }}{% endcapture %}
         {% if post_year != previous_post_year %}
           </div>
           <h3 class="m-t-3 m-b-1">{{ post_year }}</h3>

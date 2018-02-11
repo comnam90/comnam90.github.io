@@ -73,15 +73,20 @@
       <article class="post">
   <h1>S2D Storage Tiers misconfiguration bug</h1>
 
-  <div class="tags">		
+  <div class="tags">
+    <i>Tags:</i>
     		
     		
         <span class="tag">		
-            <a href="/category/Storage Spaces Direct">#Storage Spaces Direct</a>		
+            <a href="/tag/S2D">#S2D</a>		
         </span>		
     		
         <span class="tag">		
-            <a href="/category/Windows Server">#Windows Server</a>		
+            <a href="/tag/WS2016">#WS2016</a>		
+        </span>		
+    		
+        <span class="tag">		
+            <a href="/tag/bugs">#bugs</a>		
         </span>		
     		
   </div>
@@ -97,13 +102,13 @@
 
 <p><a href="https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/11/S2D-Storage-Tiers-Actual-Settings.jpg?ssl=1"><img class="aligncenter size-full wp-image-78" src="https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/11/S2D-Storage-Tiers-Actual-Settings.jpg?resize=475%2C54&#038;ssl=1" alt="s2d-storage-tiers-actual-settings" width="475" height="54" srcset="https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/11/S2D-Storage-Tiers-Actual-Settings.jpg?w=475&amp;ssl=1 475w, https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/11/S2D-Storage-Tiers-Actual-Settings.jpg?resize=300%2C34&amp;ssl=1 300w" sizes="(max-width: 475px) 100vw, 475px" data-recalc-dims="1" /></a>You can check your own systems by running the below Powershell Command</p>
 
-<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">Get-StorageTier</span> | <span class="nb">select </span>FriendlyName, ResiliencySettingName, MediaType, PhysicalDiskRedundancy
-</code></pre></div></div>
+<figure class="highlight"><pre><code class="language-powershell" data-lang="powershell"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+</pre></td><td class="code"><pre><span class="nb">Get-StorageTier</span> | <span class="nb">select </span>FriendlyName, ResiliencySettingName, MediaType, PhysicalDiskRedundancy</pre></td></tr></tbody></table></code></pre></figure>
 
 <p>If you’ve got the same problem, it can be very easily corrected by simply changing the mediatype on the Tier back to HDD</p>
 
-<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">Get-StorageTier</span> -FriendlyName Performance | <span class="nb">Set-StorageTier</span> -MediaType HDD
-</code></pre></div></div>
+<figure class="highlight"><pre><code class="language-powershell" data-lang="powershell"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+</pre></td><td class="code"><pre><span class="nb">Get-StorageTier</span> -FriendlyName Performance | <span class="nb">Set-StorageTier</span> -MediaType HDD</pre></td></tr></tbody></table></code></pre></figure>
 
 <p>I’m sure there will be a permanent fix along for this soon, but in the mean time I hope this helps others who come across the same problem.</p>
 
@@ -112,6 +117,29 @@
   <div class="date">
     Written on November  9, 2016
   </div>
+
+  <div class="category">
+    <i>Posted in: </i>	
+    		
+    		
+        <span class="tag">		
+            <a href="/category/Storage Spaces Direct">#Storage Spaces Direct</a>		
+        </span>		
+    		
+        <span class="tag">		
+            <a href="/category/Windows Server">#Windows Server</a>		
+        </span>		
+    
+  </div>
+
+  <nav class="post_navigation">
+        
+          <a href="/2016/10/my-wishlist-for-system-center-virtual-machine-manager/">&laquo; My Wishlist for System Center Virtual Machine Manager</a>
+        
+        
+          <a href="/2017/09/bug-when-applying-kb4038782-september-cu-to-storage-spaces-direct-clusters/">Bug when applying KB4038782 September CU to Storage Spaces Direct Clusters &raquo;</a>
+        
+  </nav>
   
   <div class="related">
     <h3>Related Posts</h3>
@@ -165,6 +193,11 @@
 </article>
 
     </div>
+
+   <section id="sidebar" class="col-md-4 col-md-offset-1">
+      This is a side bar
+
+   </section> 
 
     <div class="wrapper-footer">
       <div class="container">

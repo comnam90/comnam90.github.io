@@ -14,10 +14,8 @@ image: /wp-content/uploads/2016/10/IMG_20160930_083438.jpg
 categories:
   - General
 tags:
-  - Ignite
-  - MSIgnite
-  - S2D
-  - Speaking
+  - s2d
+  - speaking
 ---
 While sitting in LAX Airport with some time to kill I thought I&#8217;d reflect on the last week.
 

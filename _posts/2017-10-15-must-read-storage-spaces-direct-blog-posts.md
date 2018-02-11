@@ -14,10 +14,8 @@ image: /wp-content/uploads/2017/10/hyper-converged-minimal.png
 categories:
   - Storage Spaces Direct
 tags:
-  - S2D
-  - Storage Spaces Direct
-  - Windows Server
-  - WS2016
+  - s2d
+  - ws2016
 ---
 Hi all,
 

@@ -12,8 +12,6 @@ force_ssl_children:
   - "1"
 categories:
   - General
-tags:
-  - Ignite
 ---
 I&#8217;ve decided it&#8217;s time to get more active online, I&#8217;ve always been lurking in forums and posting on Reddit, but I want to give back more.
 
