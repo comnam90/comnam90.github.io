@@ -10,12 +10,7 @@ force_ssl:
   - "1"
 categories:
   - Hyper-V
-tags:
-  - Hyper-V
-  - Powershell
-  - S2D
-  - Windows Server
-  - WS2016
+tags: [hyper-v, powershell, s2d, windows server, ws2016]
 ---
 We&#8217;ve all had the case where there was a volume running hot on your cluster and you spend ages wrestling with perf counters to try to find that VM that&#8217;s causing your storage to burn. Well let me introduce you to a magical new command in Windows Server 2016
 

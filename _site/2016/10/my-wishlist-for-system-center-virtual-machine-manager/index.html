@@ -56,19 +56,6 @@
       <article class="post">
   <h1>My Wishlist for System Center Virtual Machine Manager</h1>
 
-  <div class="tags">
-    
-    
-        <span class="tag">
-            <a href="/category/System Center">#System Center</a>
-        </span>
-    
-        <span class="tag">
-            <a href="/category/Virtual Machine Manager">#Virtual Machine Manager</a>
-        </span>
-    
-  </div>
-
   <div class="entry">
     <p>I’ve used System Center Virtual Machine Manager for a few years now, and I’ve come to like its ups and deal with its downs.</p>
 
@@ -159,6 +146,104 @@
 
   <div class="date">
     Written on October 25, 2016
+  </div>
+
+  <div class="m-t-3 text-justify">
+    <p>I’ve used System Center Virtual Machine Manager for a few years now, and I’ve come to like its ups and deal with its downs.</p>
+
+<p>It has a lot of great features, like bare-metal deployments and logical networks, which when executed correctly are both huge time savers and take away a lot of human error.</p>
+
+<p>With SCVMM, let’s start with some of a new additions in 2016:</p>
+
+<ul>
+  <li>Converting ‘Standard Switches’ on hosts to Logical Switches
+    <ul>
+      <li>Too often in the past I’ve retro-fitted VMM into a Hyper-V Environment and had to wrestle with removing existing Standard Switches and replacing them with Logical switches and had to deal with migrating VMs, losing connectivity, rolling back. Now all that pain is gone with a single button that allows you to convert your Standard Switch to a Logical Switch if one with matching properties exists.</li>
+    </ul>
+  </li>
+  <li>Full Orchestration for Rolling Cluster Upgrades
+    <ul>
+      <li>One of the coolest features of 2016 is Rolling Cluster upgrades, it makes upgrades forever easier by allowing you to run mixed mode clusters during an upgrade process and then raise then cluster functional level once all hosts are upgraded. Think of it like you would Active Directory and Domain Controllers, upgrade them all to the new level one at a time and then raise your functional level.</li>
+      <li>VMM builds on top of this by combining it with bare-metal deployments to automate the entire process! How freaking cool is that? Especially with the next point</li>
+    </ul>
+  </li>
+  <li>Support for ‘Storage Spaces Direct’ and Storage QoS
+    <ul>
+      <li>You can deploy a complete hyperconverged cluster using VMMs bare-metal deployment</li>
+      <li>Create new volumes on your S2D clusters</li>
+      <li>Manage your Storage QoS policies with a nice GUI</li>
+      <li>And many more storage tasks</li>
+    </ul>
+  </li>
+</ul>
+
+<p>Now some of the things that I feel are still missing in VMM:</p>
+
+<ul>
+  <li>‘Getting started’ GUI after initial installation
+    <ul>
+      <li>Anyone who’s deployed a VMware vCenter will know what I’m talking about, it’s that lovely ‘Getting Started’ tab on everything in the GUI that helps you work your way through creating your Datacenters (aka. Host Groups), Adding your hosts, creating your clusters, deploying your first VM. It makes dealing with vCenter for the first time just that little bit easier, and it doesn’t feel like you need a PHD to configure it or if you do something wrong the thing will implode.</li>
+      <li>For those that have never touch VMware, here’s what I’m talking about <a href="https://i0.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-24-at-10.58.45-PM.png?ssl=1"><img class="aligncenter size-large wp-image-69" src="https://i0.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-24-at-10.58.45-PM-1024x697.png?resize=640%2C436&#038;ssl=1" alt="vCenter Datacenter Getting Started view" width="640" height="436" srcset="https://i0.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-24-at-10.58.45-PM.png?resize=1024%2C697&amp;ssl=1 1024w, https://i0.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-24-at-10.58.45-PM.png?resize=300%2C204&amp;ssl=1 300w, https://i0.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-24-at-10.58.45-PM.png?resize=768%2C523&amp;ssl=1 768w, https://i0.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-24-at-10.58.45-PM.png?w=1584&amp;ssl=1 1584w, https://i0.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-24-at-10.58.45-PM.png?w=1280 1280w" sizes="(max-width: 640px) 100vw, 640px" data-recalc-dims="1" /></a></li>
+    </ul>
+  </li>
+  <li>Advanced use of Storage QoS Features
+    <ul>
+      <li>Now creation of Storage QoS policies in VMM has a nice easy to use GUI in front of it, but they could’ve done so much more with it</li>
+      <li>Delegation of policies to Clouds/Tenants so that VM admins can assign the right policies to their VMs without needing to be fabric admins</li>
+      <li>Ability to set policies against VMs/Clouds/Host Groups. It’d be nice to get a default QoS policy against a cloud and have it automatically propagate to all child VM disks. And then be able to get more granular setting policies against a VM or specific disks on a VM that need special treatment. Instead my only option is to set a policy manually (or scripted) against even VM disk, just like if I didn’t have VMM.</li>
+    </ul>
+  </li>
+  <li>Quotas not counting compute resources of powered off VMs
+    <ul>
+      <li>Now quotas and Cloud Capacity limitations are a great way to give a department or client access to a subset of your resources and not have to worry about them consuming everything while you’re not looking, but what if that department if full of Devs who have multiple environments but only have 1 running at a time? Well they don’t need resources for all of their environments, but just enough to power on 1 of them. Too bad for you VMM counts the CPU and Memory usage of powered off VMs towards their Quota too.</li>
+    </ul>
+  </li>
+  <li>Configuration of VLANs on host physical adapters
+    <ul>
+      <li>Bare-metal deployment is great, it allows you to push out an identical configuration to all of your hosts. But what if you have NICs you don’t want to put on a switch, say for storage traffic? And they need to have a VLAN configured on them? Well VMM currently doesn’t let you do that. Instead after VMM has deployed the host you need to go through with your Set-NetAdapter command and configure those VLANs.</li>
+    </ul>
+  </li>
+  <li>Automatic configuration of VMQ settings for Bare-metal deployed hosts
+    <ul>
+      <li>VMQ is something all Hyper-V admins will struggle with at some stage or another. It would be nice if VMM could take away the pain when deploying hosts by looking at the host hardware, the networking it’s going to apply and then work out the best VMQ settings to apply.</li>
+    </ul>
+  </li>
+  <li>Tenant view of cloud capacity
+    <ul>
+      <li>Now this may seem obvious, but it’s not there. You as an Administrator can see the lovely cloud capacity view, however the tenant admin cannot.<a href="https://i0.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-24-at-11.22.14-PM.png?ssl=1"><img class="aligncenter size-large wp-image-71" src="https://i2.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-24-at-11.22.14-PM-1024x478.png?resize=640%2C299&#038;ssl=1" alt="VMM Cloud Summary View" width="640" height="299" srcset="https://i0.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-24-at-11.22.14-PM.png?resize=1024%2C478&amp;ssl=1 1024w, https://i0.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-24-at-11.22.14-PM.png?resize=300%2C140&amp;ssl=1 300w, https://i0.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-24-at-11.22.14-PM.png?resize=768%2C359&amp;ssl=1 768w, https://i0.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-24-at-11.22.14-PM.png?w=1314&amp;ssl=1 1314w" sizes="(max-width: 640px) 100vw, 640px" data-recalc-dims="1" /></a></li>
+    </ul>
+  </li>
+  <li>No native support of Hyper-V Replica
+    <ul>
+      <li>This one for me is just mind-boggling. VMM by name is designed to sit overtop of Hyper-V to help you manage your VMs. How is it meant to do that though when it doesn’t support all the core Hyper-V features? Like say Hyper-V Replica?</li>
+      <li>FYI don’t bother telling me if I integrate VMM with Azure Site Recovery then I’ll get Hyper-V Replica in VMM, because why should I pay for a cloud service to manage my on-prem service to manage my on-prem to on-prem service? That’s also just a lot of moving parts I don’t want to have to worry about.</li>
+    </ul>
+  </li>
+  <li>One Powershell to rule them all
+    <ul>
+      <li>Again taking a leaf out of VMware’s book, it would be create if there was just 1 powershell module and 1 set of commands for managing Hyper-V hosts and VMs whether they be standalone hosts, in a cluster or managed by VMM.</li>
+      <li>It would be nice if the VMM powershell commands returned at least the same details that their Hyper-V modules counterparts do – eg. where is my VM uptime in Get-SCVirtualMachine? And why must you alias Get-VM and break my scripts?</li>
+    </ul>
+  </li>
+  <li>UPDATE: Tenants unable to update VM Configuration Versions
+    <ul>
+      <li>If the whole point of having Tenant Admins is to give power back to the users for all things related to their VMs, then why can’t they upgrade the VM Configuration version? Why must this be done by a fabric admin?</li>
+    </ul>
+  </li>
+</ul>
+
+<p>This may have ended up sounding a bit ranty, but I do like VMM, it does make my life easier on the whole when managing Hyper-V environments. If they could just get the last few pieces right, then I think we’d see more people coming across from VMware land.</p>
+
+  
+    
+    
+    
+  
+    
+  
+    <p class="m-t-3 text-muted font-italic">
+      <small>Posted</small>
+    </p>
   </div>
   
   <div class="related">

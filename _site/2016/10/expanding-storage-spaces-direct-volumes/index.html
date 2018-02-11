@@ -56,19 +56,6 @@
       <article class="post">
   <h1>Expanding Storage Spaces Direct Volumes</h1>
 
-  <div class="tags">
-    
-    
-        <span class="tag">
-            <a href="/category/Storage Spaces Direct">#Storage Spaces Direct</a>
-        </span>
-    
-        <span class="tag">
-            <a href="/category/Windows Server">#Windows Server</a>
-        </span>
-    
-  </div>
-
   <div class="entry">
     <p>As many of you would have seen, Windows Server 2016 has been <a href="https://blogs.technet.microsoft.com/hybridcloud/2016/09/26/announcing-the-launch-of-windows-server-2016/">officially launched</a>, with evaluation media available and General Availability slated for later this month.</p>
 
@@ -114,6 +101,59 @@
 
   <div class="date">
     Written on October  4, 2016
+  </div>
+
+  <div class="m-t-3 text-justify">
+    <p>As many of you would have seen, Windows Server 2016 has been <a href="https://blogs.technet.microsoft.com/hybridcloud/2016/09/26/announcing-the-launch-of-windows-server-2016/">officially launched</a>, with evaluation media available and General Availability slated for later this month.</p>
+
+<p>One of the great new features in this release, is Storage Spaces Direct, a Software-Defined Storage Solution. There is already plenty of information available on how to get this up and running on <a href="https://technet.microsoft.com/en-us/windows-server-docs/storage/storage-spaces/storage-spaces-direct-overview">Technet</a>, but I thought I’d share some of the operational tasks that aren’t so obvious, starting with expanding volumes.</p>
+
+<p>Firstly we want to get the current size of the existing storage tiers that make up our volume</p>
+
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">Get-VirtualDisk</span> -FriendlyName vol1 | <span class="nb">Get-StorageTier</span> | <span class="nb">Format-Table </span>FriendlyName, @<span class="o">{</span><span class="nv">Label</span><span class="o">=</span>’Freespace<span class="o">(</span>GB<span class="o">)</span>’;Expression<span class="o">={</span><span class="nv">$_</span>.Size/1GB<span class="o">}}</span> -autosize
+</code></pre></div></div>
+<figure id="attachment_29" style="width: 300px" class="wp-caption aligncenter">
+
+<img class="wp-image-29 size-medium" src="https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-03-at-7.53.44-PM-300x73.png?resize=300%2C73&#038;ssl=1" alt="Current size of Storage Tiers" width="300" height="73" srcset="https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-03-at-7.53.44-PM.png?resize=300%2C73&amp;ssl=1 300w, https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-03-at-7.53.44-PM.png?w=446&amp;ssl=1 446w" sizes="(max-width: 300px) 100vw, 300px" data-recalc-dims="1" /><figcaption class="wp-caption-text">Current size of Storage Tiers</figcaption></figure>
+
+<p>Now in this example, we’re using a Multi-Resiliency Virtual Disk, which allows us to combine the performance of Mirror with the efficiency of Parity to get the best of both worlds. Let’s say this volume has a SQL Server on it, and I know my working data set hasn’t increased but I’ve got lots of cold data and my volume is almost full. I want to just add capacity to the volume to continue to store more cold data.</p>
+
+<p>We want to select just the Parity tier and expand that one</p>
+
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">Get-VirtualDisk</span> -FriendlyName vol1 | <span class="nb">Get-StorageTier</span> | ?<span class="o">{</span><span class="nv">$_</span>.ResiliencySettingName -eq <span class="s1">'Parity'</span><span class="o">}</span> | <span class="nb">Resize-StorageTier</span> -Size 1000GB
+</code></pre></div></div>
+
+<p>And then expand the partition to match the new size</p>
+
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">Get-VirtualDisk</span> -FriendlyName vol1 | <span class="nb">Get-Disk</span> | <span class="nb">Get-Partition</span> | ?<span class="o">{</span><span class="nv">$_</span>.type -eq <span class="s1">'Basic'</span><span class="o">}</span> | <span class="nb">Resize-Partition</span> -Size 1100GB
+</code></pre></div></div>
+
+<p>Now if we check the storage tiers again we should see our new sizes</p>
+
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">Get-VirtualDisk</span> -FriendlyName vol1 | <span class="nb">Get-StorageTier</span> | <span class="nb">Format-Table </span>FriendlyName, @<span class="o">{</span><span class="nv">Label</span><span class="o">=</span>’Freespace<span class="o">(</span>GB<span class="o">)</span>’;Expression<span class="o">={</span><span class="nv">$_</span>.Size/1GB<span class="o">}}</span> -autosize
+</code></pre></div></div>
+<figure id="attachment_33" style="width: 300px" class="wp-caption aligncenter">
+
+<img class="size-medium wp-image-33" src="https://i1.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-03-at-8.43.17-PM-300x72.png?resize=300%2C72&#038;ssl=1" alt="Size of Storage Tiers after expansion" width="300" height="72" srcset="https://i0.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-03-at-8.43.17-PM.png?resize=300%2C72&amp;ssl=1 300w, https://i0.wp.com/bcthomas.com/wp-content/uploads/2016/10/Screen-Shot-2016-10-03-at-8.43.17-PM.png?w=440&amp;ssl=1 440w" sizes="(max-width: 300px) 100vw, 300px" data-recalc-dims="1" /><figcaption class="wp-caption-text">Size of Storage Tiers after expansion</figcaption></figure>
+
+<p>If you wanted to add more Performance Tier to your volume to account for an increase in your active working set, or the data that is write intensive, then you would just have to swap out Parity for Mirror in the command where we expanded the tier.</p>
+
+<p>Shrinking of S2D (Storage Spaces Direct) volumes is not currently supported, however this is a less common scenario.</p>
+
+<p>I’ll be posting more tips like this around Storage in Windows Server 2016 over the next few weeks</p>
+
+<p> </p>
+
+  
+    
+    
+    
+  
+    
+  
+    <p class="m-t-3 text-muted font-italic">
+      <small>Posted</small>
+    </p>
   </div>
   
   <div class="related">
